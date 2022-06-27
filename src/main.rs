@@ -44,7 +44,7 @@ async fn get_progress() -> Result<HttpResponse, CustomError> {
 
 fn progress() -> (String, i64) {
     let line_len = 20;
-    let (till, percent) = count_persent(line_len);
+    let (till, percent) = count_percent(line_len);
     let mut range_str = String::from("");
 
     for n in 0..line_len {
@@ -58,7 +58,7 @@ fn progress() -> (String, i64) {
     return (String::from(range_str), percent);
 }
 
-fn count_persent(len: i32) -> (i32, i64) {
+fn count_percent(len: i32) -> (i32, i64) {
     let today = chrono::offset::Local::now().date();
     let year_dt = chrono::Local.ymd(today.year(), 1, 1);
     let days = today.signed_duration_since(year_dt).num_days();
