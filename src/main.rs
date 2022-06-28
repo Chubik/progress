@@ -1,3 +1,4 @@
+use crate::error_handler::CustomError;
 use actix_web::{get, web, App, HttpResponse, HttpServer};
 use chrono::{Datelike, TimeZone};
 use dotenv::dotenv;
@@ -19,7 +20,7 @@ struct Response {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let mut listenfd = ListenFd::from_env();
-    let mut server = HttpServer::new(|| App::new().configure(employees::init_routes));
+    let mut server = HttpServer::new(|| App::new().configure(init_routes));
     server = match listenfd.take_tcp_listener(0)? {
         Some(listener) => server.listen(listener)?,
         None => {
@@ -29,6 +30,10 @@ async fn main() -> std::io::Result<()> {
         }
     };
     server.run().await
+}
+
+fn init_routes(config: &mut web::ServiceConfig) {
+    config.service(get_progress);
 }
 
 #[get("/progress")]
