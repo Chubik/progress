@@ -1,4 +1,3 @@
-use crate::error_handler::CustomError;
 use actix_web::{get, web, App, HttpResponse, HttpServer};
 use chrono::{Datelike, TimeZone};
 use dotenv::dotenv;
