@@ -10,7 +10,7 @@ use error_handlers::CustomError;
 
 const BACK_SYMBOL: &str = "▒";
 const SELECT_SYMBOL: &str = "▓";
-const YEAR_DAYS: i64 = 365;
+const YEAR_DAYS: i64 = 365; //correct when the year will be a leap year
 
 #[derive(Serialize, Deserialize)]
 struct Response {
