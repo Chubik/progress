@@ -23,14 +23,20 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(|| App::new().configure(init_routes));
-    server = match listenfd.take_tcp_listener(0)? {
-        Some(listener) => server.listen(listener)?,
+    let (host, port) = match listenfd.take_tcp_listener(0)? {
+        Some(listener) => {
+            let addr = listener.local_addr().unwrap();
+            server = server.listen(listener)?;
+            (addr.ip().to_string(), addr.port().to_string())
+        }
         None => {
             let host = env::var("HOST").expect("Please set host in .env");
             let port = env::var("PORT").expect("Please set port in .env");
-            server.bind(format!("{}:{}", host, port))?
+            server = server.bind(format!("{}:{}", host, port))?;
+            (host, port)
         }
     };
+    println!("Server running on {}:{}", host, port);
     server.run().await
 }
 
@@ -40,7 +46,10 @@ fn init_routes(config: &mut web::ServiceConfig) {
 
 #[get("/progress")]
 async fn get_progress() -> Result<HttpResponse, CustomError> {
-    let (line, percent) = web::block(|| progress()).await.unwrap();
+    let (line, percent) = web::block(|| progress())
+        .await
+        .map_err(|_| CustomError::new(500, "Internal Server Error".to_string()))?;
+
     let response = Response {
         progress: line,
         percent: percent,
@@ -66,10 +75,15 @@ fn progress() -> (String, i64) {
 }
 
 fn count_percent(len: i32) -> (i32, i64) {
-    let today = chrono::offset::Local::now().date();
-    let year_dt = chrono::Local.ymd(today.year(), 1, 1);
+    let (today, year_dt) = get_today_and_start_of_year();
     let days = today.signed_duration_since(year_dt).num_days();
     let percent = (days * 100) / YEAR_DAYS;
     let position = (len * percent as i32) / 100;
     return (position, percent);
+}
+
+fn get_today_and_start_of_year() -> (chrono::Date<chrono::Local>, chrono::Date<chrono::Local>) {
+    let today = chrono::offset::Local::now().date();
+    let year_dt = chrono::Local.ymd(today.year(), 1, 1);
+    return (today, year_dt);
 }
