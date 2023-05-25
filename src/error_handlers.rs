@@ -11,6 +11,7 @@ pub struct CustomError {
 }
 
 impl CustomError {
+    #[allow(dead_code)]
     pub fn new(error_status_code: u16, error_message: String) -> CustomError {
         CustomError {
             error_status_code,

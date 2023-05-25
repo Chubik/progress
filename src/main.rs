@@ -5,6 +5,9 @@ use listenfd::ListenFd;
 use serde::{Deserialize, Serialize};
 use std::env;
 
+mod error_handlers;
+use error_handlers::CustomError;
+
 const BACK_SYMBOL: &str = "▒";
 const SELECT_SYMBOL: &str = "▓";
 const YEAR_DAYS: i64 = 365;
